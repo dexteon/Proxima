@@ -154,6 +154,15 @@
             background: linear-gradient(135deg, #4285f4, #8ab4f8);
         }
 
+        .tab-icon.zai {
+            background: linear-gradient(135deg, #2d6cff, #6aa0ff);
+            color: #fff;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
         .tab-icon.settings {
             background: transparent;
             border: none;
@@ -1327,6 +1336,11 @@
             <img src="../assets/gemini.png" class="tab-icon-img" alt="Gemini">
             <span class="tab-name">Gemini</span>
             <div class="tab-status offline" id="status-dot-gemini"></div>
+        </div>
+        <div class="tab" data-provider="zai" onclick="switchTab('zai')">
+            <div class="tab-icon zai">Z</div>
+            <span class="tab-name">Z.ai</span>
+            <div class="tab-status offline" id="status-dot-zai"></div>
         </div>
         <div class="tab-spacer"></div>
         <div class="tab" id="header-clear-cache-btn" onclick="triggerClearCache()" title="Clear cache and session data for this provider"
@@ -2637,7 +2651,7 @@ Confirm when done</pre>
         }
 
         async function refreshProviderLatencies() {
-            const providers = ['perplexity', 'chatgpt', 'claude', 'gemini'];
+            const providers = ['perplexity', 'chatgpt', 'claude', 'gemini', 'zai'];
             for (const p of providers) {
                 const el = document.getElementById(`card-latency-${p}`);
                 if (!el) continue;
@@ -3314,13 +3328,15 @@ Confirm when done</pre>
                 perplexity: 'perplexity.ai',
                 chatgpt: 'chatgpt.com',
                 claude: 'claude.ai',
-                gemini: 'gemini.google.com'
+                gemini: 'gemini.google.com',
+                zai: 'chat.z.ai'
             };
             const brandColors = {
                 perplexity: '#20b2aa',
                 chatgpt: '#10a37f',
                 claude: '#cc785c',
-                gemini: '#4285f4'
+                gemini: '#4285f4',
+                zai: '#2d6cff'
             };
             const linkElem = document.getElementById('cookie-modal-link');
             if (linkElem) {
@@ -3361,7 +3377,8 @@ Confirm when done</pre>
                 perplexity: 'https://www.perplexity.ai/',
                 chatgpt: 'https://chatgpt.com/',
                 claude: 'https://claude.ai/',
-                gemini: 'https://gemini.google.com/'
+                gemini: 'https://gemini.google.com/',
+                zai: 'https://chat.z.ai/'
             };
             const targetUrl = urls[cookieModalProvider] || 'https://google.com/';
             const name = cookieModalProvider.charAt(0).toUpperCase() + cookieModalProvider.slice(1);
