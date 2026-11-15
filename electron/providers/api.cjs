@@ -14,7 +14,8 @@ function _loadScript(provider) {
         chatgpt: 'chatgpt-engine.js',
         claude: 'claude-engine.js',
         gemini: 'gemini-engine.js',
-        perplexity: 'perplexity-engine.js'
+        perplexity: 'perplexity-engine.js',
+        zai: 'zai-engine.js'
     };
 
     const filename = scriptMap[provider];
@@ -70,7 +71,8 @@ async function isAPIReady(provider, webContents) {
         chatgpt: 'typeof window.__proximaChatGPT !== "undefined"',
         claude: 'typeof window.__proximaClaude !== "undefined"',
         gemini: 'typeof window.__proximaGemini !== "undefined"',
-        perplexity: 'typeof window.__proximaPerplexity !== "undefined"'
+        perplexity: 'typeof window.__proximaPerplexity !== "undefined"',
+        zai: 'typeof window.__proximaZai !== "undefined"'
     };
 
     const check = checkMap[provider];
@@ -151,7 +153,8 @@ async function sendViaAPI(provider, webContents, message, attachments = null, on
         chatgpt: '__proximaChatGPT',
         claude: '__proximaClaude',
         gemini: '__proximaGemini',
-        perplexity: '__proximaPerplexity'
+        perplexity: '__proximaPerplexity',
+        zai: '__proximaZai'
     };
 
     const apiObj = sendMap[baseProvider];
@@ -164,7 +167,7 @@ async function sendViaAPI(provider, webContents, message, attachments = null, on
         const startTime = Date.now();
 
         let executeStr;
-        if (baseProvider === 'gemini' || baseProvider === 'chatgpt' || baseProvider === 'perplexity' || baseProvider === 'claude') {
+        if (baseProvider === 'gemini' || baseProvider === 'chatgpt' || baseProvider === 'perplexity' || baseProvider === 'claude' || baseProvider === 'zai') {
             const escapedAttachments = attachments ? JSON.stringify(attachments) : 'null';
             executeStr = `window.${apiObj}.send(${escapedMessage}, ${JSON.stringify(engine)}, ${escapedAttachments}, ${JSON.stringify(conversationId)})`;
         } else {
@@ -242,7 +245,8 @@ async function abortAPI(provider, webContents) {
         chatgpt: '__proximaChatGPT.abort?.()',
         gemini: '__proximaGemini.abort?.()',
         claude: '__proximaClaude.abort?.()',
-        perplexity: '__proximaPerplexity.abort?.()'
+        perplexity: '__proximaPerplexity.abort?.()',
+        zai: '__proximaZai.abort?.()'
     };
     const code = abortMap[baseProvider];
     if (code) {
@@ -268,10 +272,11 @@ async function resetConversation(provider, webContentsGetter) {
         chatgpt: '__proximaChatGPT',
         claude: '__proximaClaude',
         gemini: '__proximaGemini',
-        perplexity: '__proximaPerplexity'
+        perplexity: '__proximaPerplexity',
+        zai: '__proximaZai'
     };
 
-    const providers = provider ? [provider] : ['chatgpt', 'claude', 'gemini', 'perplexity'];
+    const providers = provider ? [provider] : ['chatgpt', 'claude', 'gemini', 'perplexity', 'zai'];
 
     for (const p of providers) {
         const apiObj = resetMap[p];

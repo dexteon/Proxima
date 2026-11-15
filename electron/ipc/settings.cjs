@@ -141,7 +141,8 @@ function registerSettingsHandlers(deps) {
                 perplexity: 'perplexity.ai',
                 chatgpt: 'openai.com',
                 claude: 'claude.ai',
-                gemini: 'google.com'
+                gemini: 'google.com',
+                zai: 'z.ai'
             };
 
             const domain = providerDomains[provider];

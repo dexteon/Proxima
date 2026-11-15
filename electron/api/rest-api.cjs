@@ -28,6 +28,7 @@ const MODEL_ALIASES = {
     'claude': 'claude', 'claude-latest': 'claude', 'anthropic': 'claude', 'sonnet': 'claude', 'opus': 'claude', 'haiku': 'claude',
     'gemini': 'gemini', 'gemini-pro': 'gemini:pro', 'google': 'gemini', 'bard': 'gemini',
     'perplexity': 'perplexity', 'pplx': 'perplexity', 'sonar': 'perplexity',
+    'zai': 'zai', 'z.ai': 'zai', 'glm': 'zai', 'zhipu': 'zai',
     'auto': 'auto', 'all': 'all'
 };
 
@@ -444,7 +445,7 @@ function pickBestProvider(preferred) {
         return enabled.includes(base) ? base : null;
     }
 
-    const priorityList = ['claude', 'chatgpt', 'gemini', 'perplexity', 'deepseek', 'groq', 'xai', 'openrouter', 'together', 'fireworks', 'mistral', 'nvidia'];
+    const priorityList = ['claude', 'chatgpt', 'gemini', 'perplexity', 'zai', 'deepseek', 'groq', 'xai', 'openrouter', 'together', 'fireworks', 'mistral', 'nvidia'];
     const priority = priorityList.filter(p => enabled.includes(p));
     if (priority.length === 0) {
         return enabled.length > 0 ? enabled[0] : null;

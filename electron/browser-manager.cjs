@@ -32,6 +32,11 @@ class BrowserManager {
                 url: 'https://gemini.google.com/app',
                 partition: 'persist:gemini',
                 color: '#4285f4'
+            },
+            zai: {
+                url: 'https://chat.z.ai/',
+                partition: 'persist:zai',
+                color: '#2d6cff'
             }
         };
 
@@ -526,9 +531,69 @@ class BrowserManager {
             }
         });
 
+        // Z.ai: seed a saved login (cookie export) before the first load.
+        // The z.ai frontend reads localStorage.token (not the cookie), so the
+        // token is also written to localStorage once the page has loaded.
+        if (provider === 'zai') {
+            const zaiSeed = this.readZaiSeed();
+            view.webContents.on('did-finish-load', () => {
+                if (!zaiSeed || !zaiSeed.token) return;
+                view.webContents.executeJavaScript(
+                    `(function(){try{if(localStorage.getItem('token')!==${JSON.stringify(zaiSeed.token)}){localStorage.setItem('token',${JSON.stringify(zaiSeed.token)});return 'reload';}}catch(e){}return 'ok';})()`
+                ).then(r => {
+                    if (r === 'reload' && !view.webContents.isDestroyed()) view.webContents.reload();
+                }).catch(() => { });
+            });
+            const ses = view.webContents.session;
+            this.seedZaiCookies(ses, zaiSeed)
+                .catch(e => console.warn('[zai] Cookie seeding failed:', e && e.message))
+                .then(() => { if (!view.webContents.isDestroyed()) view.webContents.loadURL(config.url); });
+            return view;
+        }
+
         view.webContents.loadURL(config.url);
 
         return view;
+    }
+
+    // Reads the Z.ai login seed. Never logged, never copied into the repo.
+    // Path: PROXIMA_ZAI_COOKIES, else <userData>/zai-cookies.json (cookie-export JSON array).
+    readZaiSeed() {
+        try {
+            const fs = require('fs');
+            const p = process.env.PROXIMA_ZAI_COOKIES || path.join(app.getPath('userData'), 'zai-cookies.json');
+            if (!fs.existsSync(p)) return null;
+            const cookies = JSON.parse(fs.readFileSync(p, 'utf8'));
+            if (!Array.isArray(cookies)) return null;
+            const tokenCookie = cookies.find(c => c.name === 'token' && /z\.ai$/.test(c.domain || ''));
+            return { cookies, token: tokenCookie ? tokenCookie.value : null };
+        } catch (e) {
+            console.warn('[zai] Could not read cookie seed:', e && e.message);
+            return null;
+        }
+    }
+
+    async seedZaiCookies(ses, seed) {
+        if (!seed) return;
+        let ok = 0;
+        for (const c of seed.cookies) {
+            try {
+                const host = String(c.domain || '').replace(/^\./, '');
+                const details = {
+                    url: 'https://' + host + (c.path || '/'),
+                    name: c.name,
+                    value: c.value,
+                    path: c.path || '/',
+                    secure: c.secure !== false,
+                    httpOnly: !!c.httpOnly,
+                };
+                if (String(c.domain || '').startsWith('.')) details.domain = c.domain;
+                if (c.expirationDate) details.expirationDate = c.expirationDate;
+                await ses.cookies.set(details);
+                ok++;
+            } catch (e) { }
+        }
+        console.log(`[zai] Seeded ${ok}/${seed.cookies.length} cookies`);
     }
 
     openAuthPopup(provider, url) {
@@ -608,7 +673,8 @@ class BrowserManager {
                 perplexity: 'perplexity.ai',
                 chatgpt: 'chatgpt.com',
                 claude: 'claude.ai',
-                gemini: 'gemini.google.com'
+                gemini: 'gemini.google.com',
+                zai: 'z.ai'
             };
 
             const domain = providerDomains[provider];
@@ -820,6 +886,17 @@ class BrowserManager {
                             const hasSignIn = !!document.querySelector('a[href*="ServiceLogin"]') ||
                                             !!document.querySelector('a[data-action-id="sign-in"]');
                             return hasInput && !hasSignIn;
+                        })()
+                    `);
+                case 'zai':
+                    return await webContents.executeJavaScript(`
+                        (function() {
+                            try {
+                                const t = localStorage.getItem('token');
+                                if (!t) return false;
+                                const p = JSON.parse(atob(t.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+                                return !!p.email && !/@guest\\.com$/.test(p.email);
+                            } catch (e) { return false; }
                         })()
                     `);
                 default:

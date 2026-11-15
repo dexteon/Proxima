@@ -49,6 +49,7 @@ const PROVIDER_PARTITIONS = [
     'persist:chatgpt',
     'persist:claude',
     'persist:gemini',
+    'persist:zai',
 ];
 
 async function clearProviderCachesOnStartup() {
@@ -105,7 +106,8 @@ const defaultSettings = {
         perplexity: { enabled: true, loggedIn: false },
         chatgpt: { enabled: true, loggedIn: false },
         claude: { enabled: true, loggedIn: false },
-        gemini: { enabled: true, loggedIn: false }
+        gemini: { enabled: true, loggedIn: false },
+        zai: { enabled: true, loggedIn: false }
     },
     ipcPort: 19222,
     theme: 'dark',
@@ -572,6 +574,13 @@ async function handleMCPRequest(request) {
                         success: true,
                         provider: 'perplexity',
                         models: [{ id: 'perplexity', slug: 'default', name: 'Perplexity Live Search', description: 'Active Browser Session (Online Web Search)', tag: 'Search', status: 'enabled' }]
+                    };
+                }
+                if (baseProvider === 'zai') {
+                    return {
+                        success: true,
+                        provider: 'zai',
+                        models: [{ id: 'zai', slug: 'default', name: 'Z.ai Session Model', description: 'Active Browser Session (GLM, model picked in the Z.ai page)', tag: 'Session', status: 'enabled' }]
                     };
                 }
                 return { success: true, provider: baseProvider, models: [] };
